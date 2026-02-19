@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+
 """
 Search Engine Demonstration Script
 Shows various search capabilities and performance metrics

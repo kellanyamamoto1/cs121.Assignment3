@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+
 """
 Search Engine Implementation
 Information Analyst Track - Assignment 3
