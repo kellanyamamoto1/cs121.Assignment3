@@ -20,7 +20,7 @@ from html.parser import HTMLParser
 from typing import Dict, List, Tuple, Set
 import time
 
-# Teammates: Rohan Jaiswal: 39021535, Kellan Yamamoto 28388886, 
+# Teammates: Rohan Jaiswal: 39021535, Kellan Yamamoto 28388886, Kat Strekalova 93603067
 
 # Porter Stemmer implementation
 class PorterStemmer:
