@@ -507,8 +507,8 @@ def main():
     """Main function for building index and running search interface"""
     
     # Configuration
-    DATA_PATH = '/home/claude/ANALYST'
-    INDEX_PATH = '/home/claude/search_index.pkl'
+    DATA_PATH = './ANALYST'
+    INDEX_PATH = './search_index.pkl'
     
     # Initialize search engine
     engine = SearchEngine(DATA_PATH)
