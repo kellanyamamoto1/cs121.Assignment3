@@ -54,10 +54,10 @@ def main():
     print("Loading search engine...")
     
     # Initialize engine
-    engine = SearchEngine('/home/claude/ANALYST')
+    engine = SearchEngine('./ANALYST')
     
     try:
-        engine.load_index('/home/claude/search_index.pkl')
+        engine.load_index('./search_index.pkl')
         print(f"✓ Index loaded successfully")
         print(f"✓ Documents indexed: {engine.num_docs:,}")
         print(f"✓ Unique terms: {len(engine.index):,}")
