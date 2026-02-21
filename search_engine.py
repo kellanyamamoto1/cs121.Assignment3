@@ -306,6 +306,7 @@ class SearchEngine:
         # Document metadata
         self.doc_urls = {}  # {doc_id: url}
         self.doc_lengths = {}  # {doc_id: number_of_terms}
+        self.indexed_urls = set()  # Track normalized URLs to prevent duplicates
         
         # Collection statistics
         self.num_docs = 0
@@ -336,6 +337,14 @@ class SearchEngine:
         
         return tokens, important_tokens
     
+
+    def _normalize_url(self, url: str) -> str:
+        """Remove fragment identifiers and normalize URL"""
+        # Remove fragment (everything after #)
+        if '#' in url:
+            url = url.split('#')[0]
+        return url
+
     def build_index(self):
         """Build inverted index from all JSON files"""
         print("Building index...")
@@ -360,6 +369,12 @@ class SearchEngine:
                         if not content:
                             continue
                         
+                        # Normalize URL and check for duplicates
+                        normalized_url = self._normalize_url(url)
+                        if normalized_url in self.indexed_urls:
+                            continue  # Skip duplicate
+                        self.indexed_urls.add(normalized_url)
+
                         # Process document
                         tokens, important_tokens = self.process_document(content)
                         
@@ -501,7 +516,6 @@ class SearchEngine:
         print(f"Search completed in {elapsed*1000:.2f}ms")
         
         return results
-
 
 def main():
     """Main function for building index and running search interface"""
