@@ -5,7 +5,6 @@ from search_engine import SearchEngine
 
 
 class SearchEngineGUI:
-    """GUI interface for the search engine"""
     
     def __init__(self, root):
         self.root = root
