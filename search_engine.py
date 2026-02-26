@@ -483,8 +483,10 @@ class SearchEngine:
             for doc_id, (tf, is_important) in self.index[term].items():
                 # BM25 term frequency component
                 doc_len = self.doc_lengths[doc_id]
-                normalized_tf = tf / (1.0 - b + b * (doc_len / self.avg_doc_length))
-                score = idf * (tf * (k1 + 1.0)) / (tf + k1 * normalized_tf)
+                length_norm = 1.0 - b + b * (doc_len / self.avg_doc_length)
+                denominator = tf + k1 * length_norm
+                score = idf * (tf * (k1 + 1)) / denominator
+
                 
                 # Boost important terms
                 if is_important:
@@ -570,3 +572,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
