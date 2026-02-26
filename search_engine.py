@@ -20,6 +20,8 @@ from html.parser import HTMLParser
 from typing import Dict, List, Tuple, Set
 import time
 
+# Teammates: Rohan Jaiswal: 39021535, Kellan Yamamoto 28388886, Kat Strekalova 93603067, Travis Nguyen 61343484
+
 # Porter Stemmer implementation
 class PorterStemmer:
     """Porter Stemmer algorithm for word normalization"""
