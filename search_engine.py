@@ -493,6 +493,13 @@ class SearchEngine:
         # Compute scores
         scores = self.compute_score(query_terms)
         
+        # AND filtering
+        if len(query_terms) > 1:
+            valid_docs = set(self.index[query_terms[0]].keys())
+        for term in query_terms[1:]:
+            valid_docs &= set(self.index[term].keys())
+            scores = {doc_id: score for doc_id, score in scores.items() if doc_id in valid_docs}
+        
         # Sort by score
         ranked_docs = sorted(scores.items(), key=lambda x: x[1], reverse=True)[:top_k]
         
