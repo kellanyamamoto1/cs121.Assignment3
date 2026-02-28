@@ -354,6 +354,7 @@ class SearchEngine:
         
         doc_id = 0
         total_length = 0
+        seen_urls = set()
         
         # Traverse all JSON files
         for root, dirs, files in os.walk(self.data_path):
@@ -365,8 +366,12 @@ class SearchEngine:
                         with open(filepath, 'r', encoding='utf-8') as f:
                             data = json.load(f)
                             
-                        url = data.get('url', '')
+                        url = data.get('url', '').split('#')[0]
                         content = data.get('content', '')
+                        
+                        if url in seen_urls:
+                            continue
+                        seen_urls.add(url)
                         
                         if not content:
                             continue
