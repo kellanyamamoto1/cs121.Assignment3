@@ -1,0 +1,8 @@
+Does not handle numbers: 0.25/0.5
+Does not handle capitalization: 0.25/0.5
+Does not handle special character: 0.25/0.5
+Does not handle non English characters: 0.25/0.5
+Does not handle duplicate tokens: 0.25/0.5
+Does not handle empty file: 0/0.5
+Does not handle single letter tokens: 0/0.5
+Time complexity explanation is missing or is not complete (eg. does not include what 'n' is in the explanation or is not thorough enough): 2/3
