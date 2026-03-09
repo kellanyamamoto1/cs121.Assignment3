@@ -309,10 +309,29 @@ class SearchEngine:
         self.doc_urls = {}  # {doc_id: url}
         self.doc_lengths = {}  # {doc_id: number_of_terms}
         self.indexed_urls = set()  # Track normalized URLs to prevent duplicates
+        self.query_cache = {}  # For caching query results
+        self.term_doc_freq = {}  # For storing document frequencies of terms
         
         # Collection statistics
         self.num_docs = 0
         self.avg_doc_length = 0
+    
+    def _is_common_term(self, term: str) -> bool:
+        if term not in self.term_doc_freq:
+            return False
+        df = self.term_doc_freq[term]
+        return df > (self.num_docs * 0.4)
+    
+    def _detect_phrase_query(self, query_terms: List[str]) -> bool:
+        if len(query_terms) < 2 or len(query_terms) > 3:
+            return False
+        
+        # Check if all terms appear in index
+        for term in query_terms:
+            if term not in self.index:
+                return False
+        
+        return True
         
     def tokenize(self, text: str) -> List[str]:
         """Extract alphanumeric tokens from text"""
@@ -418,6 +437,9 @@ class SearchEngine:
         
         self.num_docs = doc_id
         self.avg_doc_length = total_length / self.num_docs if self.num_docs > 0 else 0
+
+        for term, postings in self.index.items():
+            self.term_doc_freq[term] = len(postings)
         
         elapsed = time.time() - start_time
         print(f"\nIndex built successfully!")
@@ -439,7 +461,8 @@ class SearchEngine:
             'doc_urls': self.doc_urls,
             'doc_lengths': self.doc_lengths,
             'num_docs': self.num_docs,
-            'avg_doc_length': self.avg_doc_length
+            'avg_doc_length': self.avg_doc_length,
+            'term_doc_freq': self.term_doc_freq
         }
         with open(filepath, 'wb') as f:
             pickle.dump(data, f)
@@ -461,6 +484,11 @@ class SearchEngine:
         self.doc_lengths = data['doc_lengths']
         self.num_docs = data['num_docs']
         self.avg_doc_length = data['avg_doc_length']
+        self.term_doc_freq = data.get('term_doc_freq', {})
+        if not self.term_doc_freq:
+            for term, postings in self.index.items():
+                self.term_doc_freq[term] = len(postings)
+
         print("Index loaded successfully!")
     
     def compute_score(self, query_terms: List[str], k1: float = 1.5, b: float = 0.75) -> Dict[int, float]:
@@ -472,8 +500,8 @@ class SearchEngine:
         - Boosting factor for important words (2x weight)
         """
         scores = defaultdict(float)
-        
-        # Get document frequency for each query term
+        is_phrase = self._detect_phrase_query(query_terms)
+        common_terms = [t for t in query_terms if self._is_common_term(t)]
         for term in query_terms:
             if term not in self.index:
                 continue
@@ -481,8 +509,11 @@ class SearchEngine:
             # Document frequency
             df = len(self.index[term])
             
-            # IDF computation (standard BM25)
+            # IDF computation
             idf = math.log((self.num_docs - df + 0.5) / (df + 0.5) + 1.0)
+
+            if term in common_terms:
+                idf *= 0.5
             
             # Score each document containing this term
             for doc_id, (tf, is_important) in self.index[term].items():
@@ -492,18 +523,28 @@ class SearchEngine:
                 denominator = tf + k1 * length_norm
                 score = idf * (tf * (k1 + 1)) / denominator
 
-                
-                # Boost important terms
                 if is_important:
                     score *= 2.0
                 
                 scores[doc_id] += score
+
+        if is_phrase and len(query_terms) == 2:
+            for doc_id in scores:
+                # Check if both terms present
+                terms_present = sum(1 for term in query_terms if doc_id in self.index.get(term, {}))
+                if terms_present == len(query_terms):
+                    scores[doc_id] *= 1.3
         
         return scores
     
     def search(self, query: str, top_k: int = 10) -> List[Tuple[str, float]]:
         """Search for documents matching query"""
         start_time = time.time()
+        cache_key = f"{query}:{top_k}"
+        if cache_key in self.query_cache:
+            elapsed = time.time() - start_time
+            print(f"Search completed in {elapsed*1000:.2f}ms (cached)")
+            return self.query_cache[cache_key]
         
         # Tokenize and stem query
         tokens = self.tokenize(query)
@@ -522,11 +563,9 @@ class SearchEngine:
                 valid_docs &= set(self.index[term].keys())
             scores = {doc_id: score for doc_id, score in scores.items() if doc_id in valid_docs}
         
-        # Sort by score
         ranked_docs = sorted(scores.items(), key=lambda x: x[1], reverse=True)[:top_k]
-        
-        # Format results
         results = [(self.doc_urls[doc_id], score) for doc_id, score in ranked_docs]
+        self.query_cache[cache_key] = results
         
         elapsed = time.time() - start_time
         print(f"Search completed in {elapsed*1000:.2f}ms")
