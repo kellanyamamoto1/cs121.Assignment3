@@ -122,7 +122,66 @@ class SearchEngineGUI:
         self.results_text.tag_bind("url", "<Leave>", lambda e: self.results_text.config(cursor=""))
         self.search_entry.focus()
 
-    #need to add perform search and open_url functions here
+    def perform_search(self):
+        """Execute search and display results"""
+        query = self.search_var.get().strip()
+        
+        if not query:
+            return
+        
+        # Update status
+        self.status_label.config(text="Searching...")
+        self.root.update()
+
+        results = self.engine.search(query, top_k=20)
+        
+        # Clear previous results
+        self.results_text.config(state=tk.NORMAL)
+        self.results_text.delete(1.0, tk.END)
+        
+        if not results:
+            self.results_text.insert(tk.END, "No results found.")
+            self.status_label.config(text="Search completed: 0 results")
+        else:
+            # Display results
+            for i, (url, score) in enumerate(results, 1):
+                # Result number
+                self.results_text.insert(tk.END, f"{i}. ", "number")
+                
+                # URL
+                url_start = self.results_text.index(tk.INSERT)
+                self.results_text.insert(tk.END, url, "url")
+                url_end = self.results_text.index(tk.INSERT)
+                
+                tag_name = f"url_{i}"
+                self.results_text.tag_add(tag_name, url_start, url_end)
+                self.results_text.tag_bind(tag_name, "<Button-1>", 
+                                         lambda e, u=url: self.open_url_direct(u))
+                self.results_text.tag_config(tag_name, foreground="#2196F3", underline=True)
+                
+                self.results_text.insert(tk.END, f"\n   Score: {score:.4f}", "score")
+                self.results_text.insert(tk.END, "\n\n")
+            
+            self.status_label.config(text=f"Search completed: {len(results)} results found")
+        
+        self.results_text.config(state=tk.DISABLED)
+    
+    def open_url(self, event):
+        """Handle URL click"""
+        index = self.results_text.index(f"@{event.x},{event.y}")
+        tags = self.results_text.tag_names(index)
+        
+        for tag in tags:
+            if tag.startswith("url_"):
+                # Extract URL from tag range
+                start, end = self.results_text.tag_ranges(tag)[0:2]
+                url = self.results_text.get(start, end)
+                webbrowser.open(url)
+                break
+    
+    def open_url_direct(self, url):
+        """Open URL directly"""
+        webbrowser.open(url)
 
 def main():
     """Main function to run the GUI"""
