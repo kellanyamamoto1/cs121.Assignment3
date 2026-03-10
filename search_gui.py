@@ -12,9 +12,9 @@ class SearchEngineGUI:
         self.root.geometry("900x700")
         
         # Initialize search engine
-        self.engine = SearchEngine('/home/claude/ANALYST')
+        self.engine = SearchEngine('./ANALYST')
         try:
-            self.engine.load_index('/home/claude/search_index.pkl')
+            self.engine.load_index('./search_index.pkl')
             self.status_text = f"Index loaded: {self.engine.num_docs} documents indexed"
         except:
             self.status_text = "Error: Could not load index"
