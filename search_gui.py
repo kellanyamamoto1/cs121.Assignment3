@@ -117,7 +117,6 @@ class SearchEngineGUI:
         self.results_text.tag_configure("score", foreground="#666666", font=("Arial", 9))
         self.results_text.tag_configure("number", foreground="#FF9800", font=("Arial", 11, "bold"))
     
-        self.results_text.tag_bind("url", "<Button-1>", self.open_url)
         self.results_text.tag_bind("url", "<Enter>", lambda e: self.results_text.config(cursor="hand2"))
         self.results_text.tag_bind("url", "<Leave>", lambda e: self.results_text.config(cursor=""))
         self.search_entry.focus()
