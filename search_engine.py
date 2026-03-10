@@ -590,6 +590,10 @@ def main():
         print("No existing index found. Building new index...")
         engine.build_index()
         engine.save_index(INDEX_PATH)
+        
+    import subprocess
+    subprocess.Popen(['python', 'search_gui.py'])
+    return
     
     # Interactive search interface
     print("\n" + "="*70)
@@ -619,7 +623,6 @@ def main():
             print(f"   Score: {score:.4f}\n")
         
         print("-" * 70 + "\n")
-
 
 if __name__ == "__main__":
     main()
