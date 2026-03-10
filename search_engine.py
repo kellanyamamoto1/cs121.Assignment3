@@ -591,12 +591,13 @@ def main():
         engine.build_index()
         engine.save_index(INDEX_PATH)
         
-    try:
-        import subprocess
-        subprocess.Popen(['python', 'search_gui.py'])
-        return
-    except:
-        pass
+    if os.environ.get('DISPLAY'):
+        try:
+            import subprocess
+            subprocess.Popen(['python3', 'search_gui.py'])
+            return
+        except:
+            pass
     
     # Interactive search interface
     print("\n" + "="*70)
