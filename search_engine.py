@@ -591,7 +591,7 @@ def main():
         engine.build_index()
         engine.save_index(INDEX_PATH)
         
-    if os.environ.get('DISPLAY'):
+    if os.name == 'nt' or os.environ.get('DISPLAY'):
         try:
             import subprocess
             subprocess.Popen(['python3', 'search_gui.py'])
